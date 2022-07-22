@@ -29,7 +29,24 @@ public class FluxAndMonoGeneratorService {
 
     public Flux<String> namesFluxFilter(int size) {
         Flux<String> input = Flux.fromIterable(List.of("Mukesh", "Suresh"));
-        return input.map(String::toUpperCase).filter(e -> e.length() > size).map(s -> s.length() + "-" + s);
+        return input.map(String::toUpperCase)
+                .filter(e -> e.length() > size)
+                .map(s -> s.length() + "-" + s)
+                .doOnNext(e -> {
+                    System.out.println("Next value is ::: " + e);
+                }).doOnSubscribe(s -> {
+                    System.out.println("Subscription is :::: " + s);
+                }).doOnComplete(() -> {
+                    System.out.println("completed Successfully");
+                }).doFinally(signalType -> {
+                    System.out.println("signalType in side finally  " + signalType);
+                });
+    }
+
+    public Flux<String> namesFlux_Exceptions() {
+        return Flux.just("Mukesh", "Suresh", "Ramesh")
+                .concatWith(Flux.error(new RuntimeException("Exception while Processing flux")))
+                .concatWith(Flux.just("Hello"));
     }
 
     public Flux<String> namesFluxFlatMap() {
@@ -76,7 +93,7 @@ public class FluxAndMonoGeneratorService {
     }
 
     public Flux<String> exploreConcat() {
-        return Flux.just("Mukesh").concat(Flux.just("Mahesh")).log();
+        return Flux.concat(Flux.just("Mukesh"), Flux.just("Mahesh")).log();
     }
 
     public Flux<String> exploreConcatWithMono() {
@@ -97,9 +114,9 @@ public class FluxAndMonoGeneratorService {
 
     public Flux<String> mergeDemo() {
 
-        var abcFlux = Flux.just("Mukesh","Mohan").delayElements(Duration.ofMillis(100));
+        var abcFlux = Flux.just("Mukesh", "Mohan").delayElements(Duration.ofMillis(150));
 
-        var defFlux = Flux.just("Roshan","Sohan").delayElements(Duration.ofMillis(150));
+        var defFlux = Flux.just("Roshan", "Sohan").delayElements(Duration.ofMillis(100));
 
         return Flux.merge(abcFlux, defFlux).log();
 

@@ -87,23 +87,31 @@ public class FluxAndMonoGeneratorServiceTest {
     @Test
     void exploreConcat() {
         var nameFlux = fluxAndMonoGeneratorService.exploreConcat();
-        StepVerifier.create(nameFlux).expectNext("Mukesh","Mahesh").verifyComplete();
+        StepVerifier.create(nameFlux).expectNext("Mukesh", "Mahesh").verifyComplete();
     }
+
     @Test
     void exploreConcatWithMono() {
         var nameFlux = fluxAndMonoGeneratorService.exploreConcatWithMono();
-        StepVerifier.create(nameFlux).expectNext("Mukesh","Rasna").verifyComplete();
+        StepVerifier.create(nameFlux).expectNext("Mukesh", "Rasna").verifyComplete();
     }
 
     @Test
     void mergeDemo() {
         var nameFlux = fluxAndMonoGeneratorService.mergeDemo();
-        StepVerifier.create(nameFlux).expectNext("Mohan","Roshan").verifyComplete();
+        StepVerifier.create(nameFlux).expectNext("Roshan", "Mukesh","Sohan", "Mohan").verifyComplete();
     }
 
     @Test
     void mergeWithMonoDemo() {
         var nameFlux = fluxAndMonoGeneratorService.mergeWithMonoDemo();
-        StepVerifier.create(nameFlux).expectNext("Mohan","Roshan").verifyComplete();
+        StepVerifier.create(nameFlux).expectNext("Roshan", "Data","Mohan","Raman").verifyComplete();
+    }
+
+    @Test
+    void namesFlux_Exceptions() {
+        var nameFlux = fluxAndMonoGeneratorService.namesFlux_Exceptions();
+        StepVerifier.create(nameFlux).expectNext("Mukesh", "Suresh", "Ramesh")
+                .expectError(RuntimeException.class).verify();
     }
 }
