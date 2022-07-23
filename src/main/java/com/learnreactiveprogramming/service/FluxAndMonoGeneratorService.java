@@ -1,5 +1,7 @@
 package com.learnreactiveprogramming.service;
 
+import com.learnreactiveprogramming.exception.ReactorException;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
+@Slf4j
 public class FluxAndMonoGeneratorService {
 
     public Flux<String> namesFlux() {
@@ -16,9 +19,7 @@ public class FluxAndMonoGeneratorService {
     }
 
     public Flux<String> namesFluxMap() {
-        return Flux.fromIterable(List.of("Mukesh", "Suresh"))
-                .map(String::toUpperCase)
-                .doOnComplete(() -> System.out.println("hello completed"));
+        return Flux.fromIterable(List.of("Mukesh", "Suresh")).map(String::toUpperCase).doOnComplete(() -> System.out.println("hello completed"));
     }
 
     public Flux<String> namesFluxImmutability() {
@@ -29,25 +30,87 @@ public class FluxAndMonoGeneratorService {
 
     public Flux<String> namesFluxFilter(int size) {
         Flux<String> input = Flux.fromIterable(List.of("Mukesh", "Suresh"));
-        return input.map(String::toUpperCase)
-                .filter(e -> e.length() > size)
-                .map(s -> s.length() + "-" + s)
-                .doOnNext(e -> {
-                    System.out.println("Next value is ::: " + e);
-                }).doOnSubscribe(s -> {
-                    System.out.println("Subscription is :::: " + s);
-                }).doOnComplete(() -> {
-                    System.out.println("completed Successfully");
-                }).doFinally(signalType -> {
-                    System.out.println("signalType in side finally  " + signalType);
-                });
+        return input.map(String::toUpperCase).filter(e -> e.length() > size).map(s -> s.length() + "-" + s).doOnNext(e -> {
+            System.out.println("Next value is ::: " + e);
+        }).doOnSubscribe(s -> {
+            System.out.println("Subscription is :::: " + s);
+        }).doOnComplete(() -> {
+            System.out.println("completed Successfully");
+        }).doFinally(signalType -> {
+            System.out.println("signalType in side finally  " + signalType);
+        });
     }
 
     public Flux<String> namesFlux_Exceptions() {
-        return Flux.just("Mukesh", "Suresh", "Ramesh")
-                .concatWith(Flux.error(new RuntimeException("Exception while Processing flux")))
-                .concatWith(Flux.just("Hello"));
+        return Flux.just("Mukesh", "Suresh", "Ramesh").concatWith(Flux.error(new RuntimeException("Exception while Processing flux"))).concatWith(Flux.just("Hello"));
     }
+
+    public Flux<String> namesFlux_OnErrorReturn() {
+        return Flux.just("Mukesh", "Suresh", "Ramesh").concatWith(Flux.error(new RuntimeException("Exception while Processing flux"))).onErrorReturn("Hello");
+    }
+
+    public Mono<String> exception_mono_onErrorContinue(String input) {
+        var monoInput = Mono.just(input);
+        return monoInput.map(name -> {
+            if ("abc".equalsIgnoreCase(name)) {
+                throw new RuntimeException("Exception");
+            }
+            return name;
+        }).onErrorContinue((ex, name) -> {
+            log.info("Exception is :: " + ex);
+            log.info("Name is :: " + name);
+        });
+
+    }
+
+    public Flux<String> namesFlux_OnErrorResume(Exception e) {
+        var recoveryFlux = Flux.just("Default Error Message");
+        return Flux.just("Mukesh", "Suresh", "Ramesh").concatWith(Flux.error(e)).onErrorResume(ex -> {
+            log.info("Exception is :: " + e);
+            if (e instanceof IllegalStateException) {
+                return recoveryFlux;
+            } else {
+                return Flux.error(ex);
+            }
+        });
+    }
+
+    public Flux<String> namesFlux_OnErrorContinue() {
+        return Flux.just("Mukesh", "Suresh", "Ramesh").map(name -> {
+            if ("Suresh".equalsIgnoreCase(name)) {
+                throw new IllegalStateException("Exception");
+            }
+            return name;
+        }).onErrorContinue((ex, name) -> {
+            log.info("Exception is :: " + ex);
+            log.info("Name is :: " + name);
+        });
+    }
+
+    public Flux<String> namesFlux_OnErrorMap() {
+        return Flux.just("Mukesh", "Suresh", "Ramesh").map(name -> {
+            if ("Suresh".equalsIgnoreCase(name)) {
+                throw new IllegalStateException("Exception");
+            }
+            return name;
+        }).onErrorMap(ex -> {
+            log.info("Exception is :: " + ex);
+            return new ReactorException(ex, ex.getMessage());
+        });
+    }
+
+    public Flux<String> namesFlux_doError() {
+        return Flux.just("Mukesh", "Suresh", "Ramesh").concatWith(Flux.error(new IllegalStateException("Exception occurred"))).doOnError(ex -> {
+            log.error("Error e ::: " + ex);
+        });
+    }
+
+    public Mono<Object> namesMono_ErrorReturn() {
+        return Mono.just("Mukesh").map(e -> {
+            throw new RuntimeException("Exception occurred");
+        }).onErrorReturn("abc");
+    }
+
 
     public Flux<String> namesFluxFlatMap() {
         Flux<String> input = Flux.fromIterable(List.of("Mukesh"));
@@ -69,22 +132,16 @@ public class FluxAndMonoGeneratorService {
     public Flux<String> namesFluxTransform(int size) {
         Function<Flux<String>, Flux<String>> filterMap = name -> name.map(String::toUpperCase).filter(e -> e.length() > size);
         Flux<String> input = Flux.fromIterable(List.of("Mukesh"));
-        return input.transform(filterMap)
-                .flatMap(s -> Flux.fromArray(s.split("")))
-                .defaultIfEmpty("default").log();
+        return input.transform(filterMap).flatMap(s -> Flux.fromArray(s.split(""))).defaultIfEmpty("default").log();
     }
 
     public Flux<String> namesFluxTransform_SwitchIfEmpty(int size) {
-        Function<Flux<String>, Flux<String>> filterMap =
-                name -> name.map(String::toUpperCase)
-                        .filter(e -> e.length() > size)
-                        .flatMap(s -> Flux.fromArray(s.split("")));
+        Function<Flux<String>, Flux<String>> filterMap = name -> name.map(String::toUpperCase).filter(e -> e.length() > size).flatMap(s -> Flux.fromArray(s.split("")));
 
         Flux<String> input = Flux.fromIterable(List.of("Mukesh"));
         Flux<String> aDefault = Flux.just("Default").transform(filterMap);
 
-        return input.transform(filterMap)
-                .switchIfEmpty(aDefault).log();
+        return input.transform(filterMap).switchIfEmpty(aDefault).log();
     }
 
     public Mono<String> namesMono() {
@@ -125,9 +182,7 @@ public class FluxAndMonoGeneratorService {
 
 
     public Flux<String> mergeWithMonoDemo() {
-        return Flux.
-                merge(Flux.just("Mohan", "Raman").delayElements(Duration.ofMillis(1000)),
-                        Flux.just("Roshan", "Data")).delayElements(Duration.ofMillis(1500));
+        return Flux.merge(Flux.just("Mohan", "Raman").delayElements(Duration.ofMillis(1000)), Flux.just("Roshan", "Data")).delayElements(Duration.ofMillis(1500));
     }
 
 
