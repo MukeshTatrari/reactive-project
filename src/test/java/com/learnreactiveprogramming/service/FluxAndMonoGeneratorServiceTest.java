@@ -37,13 +37,13 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void textFluxFlatMap() {
-        var nameFlux = fluxAndMonoGeneratorService.namesFluxFlatMap();
+        var nameFlux = fluxAndMonoGeneratorService.namesFluxFlatMap().log();
         StepVerifier.create(nameFlux).expectNext("M", "u", "k", "e", "s", "h").verifyComplete();
     }
 
     @Test
     void textFluxFlatMapDelay() {
-        var nameFlux = fluxAndMonoGeneratorService.namesFluxFlatMap_AsyncDelay();
+        var nameFlux = fluxAndMonoGeneratorService.namesFluxFlatMap_AsyncDelay().log();
         StepVerifier.create(nameFlux).expectNext("M", "u", "k", "e", "s", "h").verifyComplete();
     }
 
