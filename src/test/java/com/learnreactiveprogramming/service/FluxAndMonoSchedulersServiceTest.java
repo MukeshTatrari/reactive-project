@@ -33,4 +33,22 @@ class FluxAndMonoSchedulersServiceTest {
         final Flux<String> stringFlux = fluxAndMonoSchedulersService.explore_SubscribeOn();
         StepVerifier.create(stringFlux).expectNextCount(6).verifyComplete();
     }
+
+    @Test
+    void explore_Parallel() {
+        fluxAndMonoSchedulersService.explore_Parallel();
+    }
+
+    @Test
+    void explore_Parallel_Using_FlatMap() {
+        final Flux<String> stringFlux = fluxAndMonoSchedulersService.explore_Parallel_UsingFlatMap().log();
+        StepVerifier.create(stringFlux).expectNextCount(6).verifyComplete();
+    }
+
+    @Test
+    void explore_Parallel_Using_FlatMapSequential() {
+        final Flux<String> stringFlux = fluxAndMonoSchedulersService.explore_Parallel_UsingFlatMapSequential().log();
+        StepVerifier.create(stringFlux).expectNextCount(6).verifyComplete();
+    }
+
 }
