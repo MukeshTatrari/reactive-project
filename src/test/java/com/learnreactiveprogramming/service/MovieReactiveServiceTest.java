@@ -12,7 +12,7 @@ class MovieReactiveServiceTest {
     private ReviewService reviewService = new ReviewService();
     private RevenueService revenueService = new RevenueService();
     private MovieReactiveService movieReactiveService
-            = new MovieReactiveService(movieInfoService, reviewService,revenueService);
+            = new MovieReactiveService(movieInfoService, reviewService, revenueService);
 
     @Test
     void getAllMovies() {
