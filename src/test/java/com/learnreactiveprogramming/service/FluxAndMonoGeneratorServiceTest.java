@@ -3,7 +3,9 @@ package com.learnreactiveprogramming.service;
 import com.learnreactiveprogramming.exception.ReactorException;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
+import reactor.test.scheduler.VirtualTimeScheduler;
 
+import java.time.Duration;
 import java.util.Arrays;
 
 public class FluxAndMonoGeneratorServiceTest {
@@ -51,6 +53,21 @@ public class FluxAndMonoGeneratorServiceTest {
     void textFluxFlatConcatMapDelay() {
         var nameFlux = fluxAndMonoGeneratorService.namesFluxConcatMapAsyncDelay();
         StepVerifier.create(nameFlux).expectNext("M", "u", "k", "e", "s", "h").verifyComplete();
+    }
+
+    @Test
+    void textFluxFlatConcatMapDelay_1() {
+        var nameFlux = fluxAndMonoGeneratorService.namesFluxConcatMapAsyncDelay();
+        StepVerifier.create(nameFlux).expectNext("M", "u", "k", "e", "s", "h").verifyComplete();
+    }
+
+    @Test
+    void textFluxFlatConcatMapDelay_VirtualTimer() {
+        VirtualTimeScheduler.getOrSet();
+        var nameFlux = fluxAndMonoGeneratorService.namesFluxConcatMapAsyncDelay();
+        StepVerifier.withVirtualTime(() -> nameFlux)
+                .thenAwait(Duration.ofSeconds(10))
+                .expectNext("M", "u", "k", "e", "s", "h").verifyComplete();
     }
 
 
@@ -157,6 +174,7 @@ public class FluxAndMonoGeneratorServiceTest {
         var nameFlux = fluxAndMonoGeneratorService.namesFlux_doError().log();
         StepVerifier.create(nameFlux).expectNext("Mukesh", "Suresh", "Ramesh").expectError(IllegalStateException.class).verify();
     }
+
     @Test
     void namesMono_onErrorReturn() {
         var nameFlux = fluxAndMonoGeneratorService.namesMono_ErrorReturn().log();

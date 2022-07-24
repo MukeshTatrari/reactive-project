@@ -129,6 +129,7 @@ public class FluxAndMonoGeneratorService {
         return input.concatMap(e -> Flux.fromArray(e.split(""))).delayElements(Duration.ofMillis(delay));
     }
 
+
     public Flux<String> namesFluxTransform(int size) {
         Function<Flux<String>, Flux<String>> filterMap = name -> name.map(String::toUpperCase).filter(e -> e.length() > size);
         Flux<String> input = Flux.fromIterable(List.of("Mukesh"));
@@ -152,6 +153,20 @@ public class FluxAndMonoGeneratorService {
     public Flux<String> exploreConcat() {
         return Flux.concat(Flux.just("Mukesh"), Flux.just("Mahesh")).log();
     }
+
+    public Flux<String> exploreConcatDelay() {
+        return Flux.fromIterable(List.of("Alex", "Bob")).map(String::toUpperCase)
+                .filter(s -> s.length() > 3)
+                .concatWith(s ->splitString_withDelay(String.valueOf(s)));
+    }
+
+    private Flux<String> splitString_withDelay(String name) {
+        var delay = new Random().nextInt(1000);
+        var charArray = name.split("");
+        return Flux.fromArray(charArray)
+                .delayElements(Duration.ofMillis(1000));
+    }
+
 
     public Flux<String> exploreConcatWithMono() {
         return Mono.just("Mukesh").concatWith(Flux.just("Rasna")).log();
