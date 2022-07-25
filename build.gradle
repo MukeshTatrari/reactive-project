@@ -36,6 +36,8 @@ dependencies {
 
     //reactor-debug-agent
     implementation('io.projectreactor:reactor-tools:3.4.18')
+    implementation 'junit:junit:4.13.1'
+    implementation 'junit:junit:4.13.1'
 
     //testing
     testImplementation('io.projectreactor:reactor-test:3.4.18')

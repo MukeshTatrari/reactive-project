@@ -1,11 +1,13 @@
 package com.learnreactiveprogramming.service;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Ignore
 class MovieReactiveServiceRestClientTest {
 
     WebClient webClient = WebClient.builder()
