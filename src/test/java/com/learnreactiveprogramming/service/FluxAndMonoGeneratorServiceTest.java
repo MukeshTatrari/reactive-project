@@ -193,4 +193,28 @@ public class FluxAndMonoGeneratorServiceTest {
         var nameMono = fluxAndMonoGeneratorService.exception_mono_onErrorContinue("reactor").log();
         StepVerifier.create(nameMono).expectNext("reactor").verifyComplete();
     }
+
+    @Test
+    void explore_Generate() {
+        var fluxGenerator = fluxAndMonoGeneratorService.explore_Generate().log();
+        StepVerifier.create(fluxGenerator).expectNextCount(10).verifyComplete();
+    }
+
+    @Test
+    void explore_Create() {
+        var fluxCreate = fluxAndMonoGeneratorService.explore_create().log();
+        StepVerifier.create(fluxCreate).expectNextCount(6).verifyComplete();
+    }
+
+    @Test
+    void explore_create_mono() {
+        var createMono = fluxAndMonoGeneratorService.explore_create_mono().log();
+        StepVerifier.create(createMono).expectNext("Alex").verifyComplete();
+    }
+
+    @Test
+    void explore_handle() {
+        var createMono = fluxAndMonoGeneratorService.explore_handle().log();
+        StepVerifier.create(createMono).expectNext("ALEX","CHARLEY").verifyComplete();
+    }
 }

@@ -1,5 +1,6 @@
 package com.learnreactiveprogramming.service;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
@@ -15,6 +16,7 @@ class ReviewServiceTest {
     ReviewService reviewService = new ReviewService(webClient);
 
     @Test
+    @Disabled
     void retrieveReviews_RestClient() {
 
         var reviewFlux = reviewService.retrieveReviews_RestClient(1).log();

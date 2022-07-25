@@ -3,13 +3,17 @@ package com.learnreactiveprogramming.service;
 import com.learnreactiveprogramming.exception.ReactorException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+
+import static com.learnreactiveprogramming.util.CommonUtil.delay;
 
 @Slf4j
 public class FluxAndMonoGeneratorService {
@@ -155,16 +159,13 @@ public class FluxAndMonoGeneratorService {
     }
 
     public Flux<String> exploreConcatDelay() {
-        return Flux.fromIterable(List.of("Alex", "Bob")).map(String::toUpperCase)
-                .filter(s -> s.length() > 3)
-                .concatWith(s ->splitString_withDelay(String.valueOf(s)));
+        return Flux.fromIterable(List.of("Alex", "Bob")).map(String::toUpperCase).filter(s -> s.length() > 3).concatWith(s -> splitString_withDelay(String.valueOf(s)));
     }
 
     private Flux<String> splitString_withDelay(String name) {
         var delay = new Random().nextInt(1000);
         var charArray = name.split("");
-        return Flux.fromArray(charArray)
-                .delayElements(Duration.ofMillis(1000));
+        return Flux.fromArray(charArray).delayElements(Duration.ofMillis(1000));
     }
 
 
@@ -200,6 +201,56 @@ public class FluxAndMonoGeneratorService {
         return Flux.merge(Flux.just("Mohan", "Raman").delayElements(Duration.ofMillis(1000)), Flux.just("Roshan", "Data")).delayElements(Duration.ofMillis(1500));
     }
 
+
+    public Flux<Integer> explore_Generate() {
+        return Flux.generate(() -> 1, (state, sink) -> {
+            sink.next(state * 2);
+            if (state == 10) {
+                sink.complete();
+            }
+            return state + 1;
+        });
+    }
+
+    public static List<String> names() {
+        delay(1000);
+        return List.of("Alex", "Bob", "Charley");
+    }
+
+    public Flux<String> explore_create() {
+        return Flux.create(sink -> {
+//            names().forEach(sink::next);
+            CompletableFuture
+                    .supplyAsync(() -> names())
+                    .thenAccept(names -> {
+                        names().forEach(sink::next);
+                    })
+                    .thenRun(() -> explore_sendEvents(sink));
+        });
+    }
+
+    public Mono<String> explore_create_mono() {
+        return Mono.create(sink -> {
+            sink.success("Alex");
+        });
+    }
+
+    public Flux<String> explore_handle() {
+        return Flux.fromIterable(List.of("Alex", "Bob", "Charley"))
+                .handle((name, sink) -> {
+                    if (name.length() > 3) {
+                        sink.next(name.toUpperCase());
+                    }
+                });
+    }
+
+    public void explore_sendEvents(FluxSink<String> fluxSink) {
+        CompletableFuture
+                .supplyAsync(() -> names())
+                .thenAccept(names -> {
+                    names().forEach(fluxSink::next);
+                }).thenRun(fluxSink::complete);
+    }
 
     public static void main(String[] args) {
         FluxAndMonoGeneratorService service = new FluxAndMonoGeneratorService();
